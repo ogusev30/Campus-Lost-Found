@@ -36,6 +36,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={locale}
       className={`${bitter.variable} ${workSans.variable} ${permanentMarker.variable} h-full`}
+      suppressHydrationWarning
     >
       <head>
         <script

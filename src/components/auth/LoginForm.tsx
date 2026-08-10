@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { formatMessage } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
@@ -42,7 +43,9 @@ export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
     return (
       <div className="rounded-flyer border-2 border-ink bg-paper-dark p-6 text-center">
         <p className="font-display font-semibold text-ink">{dict.checkEmailTitle}</p>
-        <p className="mt-2 text-sm text-ink-faint">{dict.checkEmailBody(email)}</p>
+        <p className="mt-2 text-sm text-ink-faint">
+          {formatMessage(dict.checkEmailBody, { email })}
+        </p>
       </div>
     );
   }

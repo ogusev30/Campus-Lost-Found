@@ -29,8 +29,7 @@ const en = {
     sendButton: "Send magic link",
     sending: "Sending magic link...",
     checkEmailTitle: "Check your email",
-    checkEmailBody: (email: string) =>
-      `We sent a magic link to ${email}. Click it to sign in.`,
+    checkEmailBody: "We sent a magic link to {email}. Click it to sign in.",
   },
   profileSetup: {
     badge: "one more thing",
@@ -84,7 +83,7 @@ const en = {
     saveChanges: "Save Changes",
     saving: "Saving...",
     noClaims: "No claims yet.",
-    receivedClaims: (count: number) => `Received Claims (${count})`,
+    receivedClaims: "Received Claims ({count})",
     contact: "Contact",
     accept: "Accept",
     reject: "Reject",
@@ -176,8 +175,7 @@ const tr: typeof en = {
     sendButton: "Sihirli linki gönder",
     sending: "Sihirli link gönderiliyor...",
     checkEmailTitle: "E-postanı kontrol et",
-    checkEmailBody: (email: string) =>
-      `${email} adresine bir sihirli link gönderdik. Giriş yapmak için tıkla.`,
+    checkEmailBody: "{email} adresine bir sihirli link gönderdik. Giriş yapmak için tıkla.",
   },
   profileSetup: {
     badge: "son bir adım",
@@ -231,7 +229,7 @@ const tr: typeof en = {
     saveChanges: "Değişiklikleri Kaydet",
     saving: "Kaydediliyor...",
     noClaims: "Henüz claim yok.",
-    receivedClaims: (count: number) => `Gelen Claim'ler (${count})`,
+    receivedClaims: "Gelen Claim'ler ({count})",
     contact: "İletişim",
     accept: "Kabul Et",
     reject: "Reddet",
