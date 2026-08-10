@@ -14,6 +14,10 @@ export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+export function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 /** Fills `{token}` placeholders in a dictionary string, e.g. formatMessage("Hi {name}", { name: "Sevim" }). */
 export function formatMessage(
   template: string,
