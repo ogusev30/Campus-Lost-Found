@@ -26,6 +26,14 @@ export async function Header() {
           >
             Report Item
           </Link>
+          {session && (
+            <Link
+              href="/sent-claims"
+              className="font-display font-semibold text-ink hover:text-brick"
+            >
+              Sent Claims
+            </Link>
+          )}
 
           {session ? (
             <div className="flex items-center gap-3 border-l-2 border-ink/10 pl-3">

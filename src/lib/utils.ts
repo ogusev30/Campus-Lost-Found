@@ -13,3 +13,13 @@ export function tiltForId(id: string): number {
 export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
+
+/** Formats a plain "YYYY-MM-DD" date string without shifting a day due to timezone parsing. */
+export function formatItemDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
