@@ -1,0 +1,15 @@
+-- Campus Lost & Found — Student 2 (Discover & Claim) policies.
+-- Run this THIRD, after schema.sql and rls_student1.sql.
+-- Not implemented here — owned by Student 2. Needed eventually:
+--
+--   claims_insert_claimant: claimant can insert a claim only when
+--     item.type = 'found', item.status = 'open', item.owner_id <> auth.uid(),
+--     and the new row's claimant_id = auth.uid().
+--
+--   claims_select_own_submitted: claimant can select claims where
+--     claimant_id = auth.uid().
+--
+-- Item browse visibility is already covered by items_select_all_authenticated
+-- in schema.sql. Owner contact info for an accepted claim should be exposed
+-- via a claimant-facing SECURITY DEFINER function analogous to
+-- get_owner_claims() in rls_student1.sql, not by relaxing profiles RLS.
