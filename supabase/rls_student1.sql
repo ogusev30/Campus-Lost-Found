@@ -7,6 +7,12 @@ create policy "profiles_select_own" on public.profiles
 create policy "profiles_update_own" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);
 
+-- Lets profile-setup upsert work even if the on_auth_user_created trigger
+-- didn't create the row (e.g. it ran before the trigger existed, or the
+-- trigger couldn't be created due to project permissions).
+create policy "profiles_insert_own" on public.profiles
+  for insert with check (auth.uid() = id);
+
 create policy "items_insert_own" on public.items
   for insert with check (auth.uid() = owner_id);
 

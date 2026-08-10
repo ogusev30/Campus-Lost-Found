@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       colors: {
         paper: {
-          DEFAULT: "#F7F0E1",
-          dark: "#EFE4CC",
-          darker: "#E4D4AE",
+          DEFAULT: "#F0E4D0",
+          dark: "#DCC6A5",
+          darker: "#E6D3BB",
         },
         ink: {
           DEFAULT: "#1B2A4A",
@@ -50,7 +50,7 @@ const config: Config = {
       },
       backgroundImage: {
         "paper-grain":
-          "radial-gradient(circle at 1px 1px, rgba(27,42,74,0.05) 1px, transparent 0)",
+          "radial-gradient(circle at 1px 1px, rgba(27,42,74,0.08) 1px, transparent 0)",
       },
       backgroundSize: {
         grain: "18px 18px",

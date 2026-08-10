@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply min-h-full bg-paper bg-paper-grain bg-grain text-ink font-body antialiased;
+    @apply min-h-full bg-paper-darker bg-paper-grain bg-grain text-ink font-body antialiased;
   }
 
   h1,

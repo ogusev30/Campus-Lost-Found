@@ -23,8 +23,7 @@ export async function saveProfileName(
 
   const { error } = await supabase
     .from("profiles")
-    .update({ name })
-    .eq("id", user.id);
+    .upsert({ id: user.id, email: user.email!, name }, { onConflict: "id" });
 
   if (error) {
     return { error: error.message };

@@ -7,7 +7,7 @@ export async function Header() {
   const session = await getCurrentUser();
 
   return (
-    <header className="border-b-2 border-ink/10 bg-paper">
+    <header className="border-b-2 border-ink/10 bg-paper-dark">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="font-display text-xl font-bold text-ink">
           Campus Lost <span className="text-brick">&amp;</span> Found
