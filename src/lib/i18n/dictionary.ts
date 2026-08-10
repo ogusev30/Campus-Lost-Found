@@ -8,6 +8,7 @@ const en = {
     browseItems: "Browse Items",
     reportItem: "Report Item",
     myListings: "My Listings",
+    achievements: "Achievements",
     settings: "Settings",
     login: "Login",
     logout: "Logout",
@@ -125,6 +126,36 @@ const en = {
     Accessories: "Accessories",
     Other: "Other",
   },
+  achievements: {
+    badge: "your badges",
+    heading: "Achievements",
+    subheading: "Little wins for helping the board.",
+    starsEarned: "{count} / {total} stars",
+    unlocked: "Unlocked",
+    progress: "{current} / {threshold}",
+    items: {
+      firstPin: {
+        title: "First Pin",
+        description: "Report your first item.",
+      },
+      prolificReporter: {
+        title: "Prolific Reporter",
+        description: "Report 5 items.",
+      },
+      fullCircle: {
+        title: "Full Circle",
+        description: "Report both a lost item and a found item.",
+      },
+      greatFinder: {
+        title: "Great Finder",
+        description: "Get 3 of your items marked as returned.",
+      },
+      trustedOwner: {
+        title: "Trusted Owner",
+        description: "Accept 3 claims from other students.",
+      },
+    },
+  },
   errors: {
     mustBeLoggedIn: "You must be logged in.",
     pleaseCheckForm: "Please check the form.",
@@ -154,6 +185,7 @@ const tr: typeof en = {
     browseItems: "İlanlara Göz At",
     reportItem: "İlan Ver",
     myListings: "İlanlarım",
+    achievements: "Rozetler",
     settings: "Ayarlar",
     login: "Giriş Yap",
     logout: "Çıkış Yap",
@@ -270,6 +302,36 @@ const tr: typeof en = {
     "ID / Cards": "Kimlik / Kart",
     Accessories: "Aksesuar",
     Other: "Diğer",
+  },
+  achievements: {
+    badge: "rozetlerin",
+    heading: "Rozetler",
+    subheading: "Panoya katkın için küçük ödüller.",
+    starsEarned: "{count} / {total} yıldız",
+    unlocked: "Kazanıldı",
+    progress: "{current} / {threshold}",
+    items: {
+      firstPin: {
+        title: "İlk İğne",
+        description: "İlk eşyanı bildir.",
+      },
+      prolificReporter: {
+        title: "Üretken Muhabir",
+        description: "5 eşya bildir.",
+      },
+      fullCircle: {
+        title: "Tam Daire",
+        description: "Hem bir kayıp hem bir bulundu ilanı ver.",
+      },
+      greatFinder: {
+        title: "Usta Bulucu",
+        description: "3 eşyanı iade edildi olarak işaretle.",
+      },
+      trustedOwner: {
+        title: "Güvenilir Sahip",
+        description: "Diğer öğrencilerden 3 claim kabul et.",
+      },
+    },
   },
   errors: {
     mustBeLoggedIn: "Giriş yapmış olmalısın.",

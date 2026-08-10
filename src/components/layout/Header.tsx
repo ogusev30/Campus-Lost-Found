@@ -3,17 +3,25 @@ import { getCurrentUser } from "@/lib/supabase/auth-helpers";
 import { signOut } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { StarBadge } from "@/components/ui/StarBadge";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { getAchievementStats } from "@/lib/achievements/getStats";
+import { evaluateAchievements } from "@/lib/achievements/evaluate";
+import { formatMessage } from "@/lib/utils";
 import type { Dictionary, Locale } from "@/lib/i18n/dictionary";
 
 export async function Header({
   dict,
   locale,
 }: {
-  dict: Dictionary["nav"];
+  dict: Dictionary;
   locale: Locale;
 }) {
   const session = await getCurrentUser();
+
+  const stars = session
+    ? evaluateAchievements(await getAchievementStats(session.user.id))
+    : null;
 
   return (
     <header className="flex-shrink-0 border-b-2 border-ink/10 bg-paper-dark">
@@ -31,34 +39,46 @@ export async function Header({
             href="/browse"
             className="font-display font-semibold text-ink hover:text-brick md:hidden"
           >
-            {dict.browseItems}
+            {dict.nav.browseItems}
           </Link>
           <Link
             href="/report"
             className="font-display font-semibold text-ink hover:text-brick md:hidden"
           >
-            {dict.reportItem}
+            {dict.nav.reportItem}
           </Link>
 
           <LanguageToggle locale={locale} />
+
+          {session && stars && (
+            <Link href="/achievements">
+              <StarBadge
+                count={stars.stars}
+                title={formatMessage(dict.achievements.starsEarned, {
+                  count: stars.stars,
+                  total: stars.total,
+                })}
+              />
+            </Link>
+          )}
 
           {session ? (
             <div className="flex items-center gap-3 border-l-2 border-ink/10 pl-3 md:border-l-0 md:pl-0">
               <div className="leading-tight">
                 <p className="font-display font-semibold text-ink">
-                  {session.profile?.name ?? dict.unnamedUser}
+                  {session.profile?.name ?? dict.nav.unnamedUser}
                 </p>
                 <p className="text-xs text-ink-faint">{session.user.email}</p>
               </div>
               <form action={signOut}>
                 <Button type="submit" variant="ghost" className="px-3 py-1.5 text-xs">
-                  {dict.logout}
+                  {dict.nav.logout}
                 </Button>
               </form>
             </div>
           ) : (
             <Button href="/login" variant="secondary" className="px-3 py-1.5 text-xs">
-              {dict.login}
+              {dict.nav.login}
             </Button>
           )}
         </nav>

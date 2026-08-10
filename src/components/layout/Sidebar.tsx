@@ -23,6 +23,7 @@ export function Sidebar({ dict }: { dict: Dictionary["nav"] }) {
     { href: "/browse", label: dict.browseItems, icon: SearchIcon },
     { href: "/report", label: dict.reportItem, icon: PlusCircleIcon },
     { href: "/my-listings", label: dict.myListings, icon: StackIcon },
+    { href: "/achievements", label: dict.achievements, icon: StarOutlineIcon },
   ];
 
   return (
@@ -106,6 +107,22 @@ function StackIcon(props: SVGProps<SVGSVGElement>) {
       <rect x="3.5" y="4" width="17" height="5" rx="1" />
       <rect x="3.5" y="10.5" width="17" height="5" rx="1" />
       <path d="M6 18.5h6" />
+    </svg>
+  );
+}
+
+function StarOutlineIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M12 3.5l2.6 5.4 5.9.66-4.35 4.05 1.13 5.9L12 16.85l-5.28 2.66 1.13-5.9-4.35-4.05 5.9-.66L12 3.5z" />
     </svg>
   );
 }

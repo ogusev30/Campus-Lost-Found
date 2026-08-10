@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex h-screen overflow-hidden">
         <Sidebar dict={dict.nav} />
         <div className="flex h-screen flex-1 flex-col overflow-hidden">
-          <Header dict={dict.nav} locale={locale} />
+          <Header dict={dict} locale={locale} />
           <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
       </body>
