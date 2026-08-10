@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-paper: 240, 228, 208;
+  --color-paper-dark: 220, 198, 165;
+  --color-paper-darker: 230, 211, 187;
+  --color-ink: 27, 42, 74;
+  --color-ink-light: 46, 66, 105;
+  --color-ink-faint: 90, 107, 140;
+  --color-mustard: 216, 163, 34;
+  --color-mustard-dark: 180, 132, 26;
+  --color-mustard-light: 240, 200, 98;
+  --color-brick: 179, 69, 44;
+  --color-brick-dark: 143, 53, 33;
+  --color-brick-light: 212, 107, 76;
+  --color-cork: 139, 111, 71;
+  --color-cork-dark: 107, 85, 53;
+}
+
+.dark {
+  --color-paper: 42, 33, 24;
+  --color-paper-dark: 34, 26, 19;
+  --color-paper-darker: 22, 17, 13;
+  --color-ink: 240, 228, 208;
+  --color-ink-light: 230, 211, 187;
+  --color-ink-faint: 184, 169, 140;
+  --color-mustard: 232, 184, 64;
+  --color-mustard-dark: 216, 163, 34;
+  --color-mustard-light: 245, 216, 136;
+  --color-brick: 214, 90, 60;
+  --color-brick-dark: 179, 69, 44;
+  --color-brick-light: 230, 138, 108;
+  --color-cork: 168, 138, 92;
+  --color-cork-dark: 139, 111, 71;
+}
+
 @layer base {
   html {
     @apply h-full;
@@ -25,6 +59,6 @@
 
 @layer utilities {
   .paper-edge {
-    box-shadow: inset 0 0 0 1px rgba(27, 42, 74, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(var(--color-ink), 0.14);
   }
 }

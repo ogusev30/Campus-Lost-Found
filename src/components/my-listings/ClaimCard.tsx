@@ -5,12 +5,7 @@ import { acceptClaim, rejectClaim } from "@/lib/actions/claims";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { OwnerClaimView } from "@/lib/types/database.types";
-
-const STATUS_LABEL: Record<OwnerClaimView["status"], string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  rejected: "Rejected",
-};
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 const STATUS_CLASS: Record<OwnerClaimView["status"], string> = {
   pending: "text-mustard-dark",
@@ -18,7 +13,13 @@ const STATUS_CLASS: Record<OwnerClaimView["status"], string> = {
   rejected: "text-brick/70",
 };
 
-export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
+export function ClaimCard({
+  claim,
+  dict,
+}: {
+  claim: OwnerClaimView;
+  dict: Dictionary;
+}) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
     <div className="rounded-flyer border-2 border-ink/20 bg-paper-dark p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="font-display font-semibold text-ink">
-          {claim.claimant_name ?? "Unnamed user"}
+          {claim.claimant_name ?? dict.nav.unnamedUser}
         </p>
         <span
           className={cn(
@@ -42,7 +43,7 @@ export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
             STATUS_CLASS[claim.status],
           )}
         >
-          {STATUS_LABEL[claim.status]}
+          {dict.claimStatus[claim.status]}
         </span>
       </div>
 
@@ -50,7 +51,8 @@ export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
 
       {claim.status === "accepted" && claim.claimant_email && (
         <p className="mt-2 text-xs text-ink">
-          Contact: <span className="font-semibold">{claim.claimant_email}</span>
+          {dict.myListings.contact}:{" "}
+          <span className="font-semibold">{claim.claimant_email}</span>
         </p>
       )}
 
@@ -62,7 +64,7 @@ export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
             disabled={isPending}
             onClick={() => run(() => acceptClaim(claim.claim_id))}
           >
-            Accept
+            {dict.myListings.accept}
           </Button>
           <Button
             variant="ghost"
@@ -70,7 +72,7 @@ export function ClaimCard({ claim }: { claim: OwnerClaimView }) {
             disabled={isPending}
             onClick={() => run(() => rejectClaim(claim.claim_id))}
           >
-            Reject
+            {dict.myListings.reject}
           </Button>
         </div>
       )}

@@ -3,8 +3,17 @@
 import { useActionState } from "react";
 import { saveProfileName } from "@/lib/actions/profile";
 import { Button } from "@/components/ui/Button";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
-export function SettingsForm({ name, email }: { name: string; email: string }) {
+export function SettingsForm({
+  name,
+  email,
+  dict,
+}: {
+  name: string;
+  email: string;
+  dict: Dictionary["settings"];
+}) {
   const [state, formAction, pending] = useActionState(saveProfileName, {
     error: null,
   });
@@ -15,7 +24,7 @@ export function SettingsForm({ name, email }: { name: string; email: string }) {
 
       <label className="flex flex-col gap-1.5">
         <span className="font-display text-sm font-semibold text-ink">
-          Full name
+          {dict.nameLabel}
         </span>
         <input
           type="text"
@@ -27,7 +36,9 @@ export function SettingsForm({ name, email }: { name: string; email: string }) {
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="font-display text-sm font-semibold text-ink">Email</span>
+        <span className="font-display text-sm font-semibold text-ink">
+          {dict.emailLabel}
+        </span>
         <input
           type="text"
           value={email}
@@ -43,7 +54,7 @@ export function SettingsForm({ name, email }: { name: string; email: string }) {
       )}
 
       <Button type="submit" variant="primary" disabled={pending} className="self-start">
-        {pending ? "Saving..." : "Save Changes"}
+        {pending ? dict.saving : dict.saveChanges}
       </Button>
     </form>
   );

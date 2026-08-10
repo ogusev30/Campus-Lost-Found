@@ -5,12 +5,7 @@ import { usePathname } from "next/navigation";
 import type { SVGProps } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
-
-const NAV_ITEMS = [
-  { href: "/browse", label: "Browse Items", icon: SearchIcon },
-  { href: "/report", label: "Report Item", icon: PlusCircleIcon },
-  { href: "/my-listings", label: "My Listings", icon: StackIcon },
-];
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 function navLinkClasses(active: boolean) {
   return cn(
@@ -21,8 +16,14 @@ function navLinkClasses(active: boolean) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ dict }: { dict: Dictionary["nav"] }) {
   const pathname = usePathname();
+
+  const navItems = [
+    { href: "/browse", label: dict.browseItems, icon: SearchIcon },
+    { href: "/report", label: dict.reportItem, icon: PlusCircleIcon },
+    { href: "/my-listings", label: dict.myListings, icon: StackIcon },
+  ];
 
   return (
     <aside className="hidden w-56 flex-shrink-0 flex-col overflow-y-auto border-r-2 border-ink/10 bg-paper-dark md:flex">
@@ -39,7 +40,7 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+        {navItems.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} className={navLinkClasses(pathname === href)}>
             <Icon className="h-4 w-4 flex-shrink-0" />
             {label}
@@ -50,7 +51,7 @@ export function Sidebar() {
       <div className="border-t-2 border-dashed border-ink/15 px-3 py-4">
         <Link href="/settings" className={navLinkClasses(pathname === "/settings")}>
           <GearIcon className="h-4 w-4 flex-shrink-0" />
-          Settings
+          {dict.settings}
         </Link>
       </div>
     </aside>

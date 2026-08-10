@@ -4,8 +4,9 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
-export function LoginForm() {
+export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/my-listings";
 
@@ -40,11 +41,8 @@ export function LoginForm() {
   if (status === "sent") {
     return (
       <div className="rounded-flyer border-2 border-ink bg-paper-dark p-6 text-center">
-        <p className="font-display font-semibold text-ink">Check your email</p>
-        <p className="mt-2 text-sm text-ink-faint">
-          We sent a magic link to <span className="font-semibold">{email}</span>.
-          Click it to sign in.
-        </p>
+        <p className="font-display font-semibold text-ink">{dict.checkEmailTitle}</p>
+        <p className="mt-2 text-sm text-ink-faint">{dict.checkEmailBody(email)}</p>
       </div>
     );
   }
@@ -53,14 +51,14 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5 text-left">
         <span className="font-display text-sm font-semibold text-ink">
-          Email address
+          {dict.emailLabel}
         </span>
         <input
           type="email"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@university.edu"
+          placeholder={dict.emailPlaceholder}
           className="rounded-flyer border-2 border-ink bg-paper px-3 py-2 font-body text-ink outline-none focus:border-brick"
         />
       </label>
@@ -77,7 +75,7 @@ export function LoginForm() {
         disabled={status === "loading"}
         className="w-full justify-center"
       >
-        {status === "loading" ? "Sending magic link..." : "Send magic link"}
+        {status === "loading" ? dict.sending : dict.sendButton}
       </Button>
     </form>
   );

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { parseItemFields } from "@/lib/validation/itemSchema";
 import { validateImageFile } from "@/lib/validation/imageValidation";
+import { getDictionary } from "@/lib/i18n/locale";
 
 export interface ItemFormState {
   error: string | null;
@@ -36,21 +37,22 @@ export async function createItem(
   formData: FormData,
 ): Promise<ItemFormState> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "You must be logged in.", success: false };
+  if (!user) return { error: dict.errors.mustBeLoggedIn, success: false };
 
-  const parsed = parseItemFields(formData);
+  const parsed = parseItemFields(formData, dict.errors);
   if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message ?? "Please check the form.",
+      error: parsed.error.issues[0]?.message ?? dict.errors.pleaseCheckForm,
       success: false,
     };
   }
 
   const imageFile = formData.get("image") as File | null;
-  const imageError = validateImageFile(imageFile);
+  const imageError = validateImageFile(imageFile, dict.errors);
   if (imageError) return { error: imageError, success: false };
 
   let uploaded: { path: string; publicUrl: string };
@@ -86,15 +88,16 @@ export async function updateItem(
   formData: FormData,
 ): Promise<ItemFormState> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "You must be logged in.", success: false };
+  if (!user) return { error: dict.errors.mustBeLoggedIn, success: false };
 
-  const parsed = parseItemFields(formData);
+  const parsed = parseItemFields(formData, dict.errors);
   if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message ?? "Please check the form.",
+      error: parsed.error.issues[0]?.message ?? dict.errors.pleaseCheckForm,
       success: false,
     };
   }
@@ -110,7 +113,7 @@ export async function updateItem(
 
   const imageFile = formData.get("image") as File | null;
   if (imageFile && imageFile.size > 0) {
-    const imageError = validateImageFile(imageFile);
+    const imageError = validateImageFile(imageFile, dict.errors);
     if (imageError) return { error: imageError, success: false };
 
     try {
@@ -129,7 +132,7 @@ export async function updateItem(
 
   if (error) return { error: error.message, success: false };
   if (!data || data.length === 0) {
-    return { error: "Not authorized to edit this listing.", success: false };
+    return { error: dict.errors.notAuthorizedEdit, success: false };
   }
 
   revalidatePath("/my-listings");
@@ -138,6 +141,7 @@ export async function updateItem(
 
 export async function closeItem(itemId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -150,7 +154,7 @@ export async function closeItem(itemId: string): Promise<{ error: string | null 
     .select("id");
 
   if (error) return { error: error.message };
-  if (!data || data.length === 0) return { error: "Not authorized." };
+  if (!data || data.length === 0) return { error: dict.errors.notAuthorized };
 
   revalidatePath("/my-listings");
   return { error: null };
@@ -158,6 +162,7 @@ export async function closeItem(itemId: string): Promise<{ error: string | null 
 
 export async function deleteItem(itemId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -171,9 +176,7 @@ export async function deleteItem(itemId: string): Promise<{ error: string | null
 
   if (error) return { error: error.message };
   if (!data || data.length === 0) {
-    return {
-      error: "This listing has claims and can't be deleted — close it instead.",
-    };
+    return { error: dict.errors.deleteHasClaims };
   }
 
   revalidatePath("/my-listings");
@@ -182,6 +185,7 @@ export async function deleteItem(itemId: string): Promise<{ error: string | null
 
 export async function markReturned(itemId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -193,8 +197,8 @@ export async function markReturned(itemId: string): Promise<{ error: string | nu
     .eq("id", itemId)
     .single();
 
-  if (fetchError || !item) return { error: "Listing not found." };
-  if (item.owner_id !== user.id) return { error: "Not authorized." };
+  if (fetchError || !item) return { error: dict.errors.listingNotFound };
+  if (item.owner_id !== user.id) return { error: dict.errors.notAuthorized };
 
   const allowed =
     (item.type === "lost" && item.status === "open") ||
@@ -204,8 +208,8 @@ export async function markReturned(itemId: string): Promise<{ error: string | nu
     return {
       error:
         item.type === "found"
-          ? "This item must be claimed before it can be marked as returned."
-          : "This item can't be marked as returned right now.",
+          ? dict.errors.returnFoundNeedsClaim
+          : dict.errors.returnNotAllowed,
     };
   }
 

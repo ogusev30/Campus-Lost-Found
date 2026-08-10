@@ -4,13 +4,16 @@ import { useState, useTransition } from "react";
 import { closeItem, deleteItem, markReturned } from "@/lib/actions/items";
 import { Button } from "@/components/ui/Button";
 import type { Item } from "@/lib/types/database.types";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function ListingActions({
   item,
   onEdit,
+  dict,
 }: {
   item: Item;
   onEdit: () => void;
+  dict: Dictionary;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export function ListingActions({
             onClick={onEdit}
             disabled={isPending}
           >
-            Edit
+            {dict.myListings.edit}
           </Button>
         )}
 
@@ -52,7 +55,7 @@ export function ListingActions({
             disabled={isPending}
             onClick={() => runAction(() => markReturned(item.id))}
           >
-            Mark as Returned
+            {dict.myListings.markReturned}
           </Button>
         )}
 
@@ -63,7 +66,7 @@ export function ListingActions({
             disabled={isPending}
             onClick={() => runAction(() => closeItem(item.id))}
           >
-            Close Listing
+            {dict.myListings.closeListing}
           </Button>
         )}
 
@@ -74,12 +77,12 @@ export function ListingActions({
             disabled={isPending}
             onClick={() => setConfirmingDelete(true)}
           >
-            Delete
+            {dict.myListings.delete}
           </Button>
         ) : (
           <span className="flex items-center gap-2">
             <span className="font-display text-xs font-semibold text-brick">
-              Delete for good?
+              {dict.myListings.deleteConfirm}
             </span>
             <Button
               variant="danger"
@@ -87,7 +90,7 @@ export function ListingActions({
               disabled={isPending}
               onClick={() => runAction(() => deleteItem(item.id))}
             >
-              Yes, delete
+              {dict.myListings.deleteYes}
             </Button>
             <Button
               variant="ghost"
@@ -95,7 +98,7 @@ export function ListingActions({
               onClick={() => setConfirmingDelete(false)}
               disabled={isPending}
             >
-              Cancel
+              {dict.myListings.cancel}
             </Button>
           </span>
         )}

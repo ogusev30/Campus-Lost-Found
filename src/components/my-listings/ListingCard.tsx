@@ -8,20 +8,23 @@ import { EditListingForm } from "@/components/my-listings/EditListingForm";
 import { ClaimsList } from "@/components/my-listings/ClaimsList";
 import { formatItemDate } from "@/lib/utils";
 import type { Item, OwnerClaimView } from "@/lib/types/database.types";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function ListingCard({
   item,
   claims,
+  dict,
 }: {
   item: Item;
   claims: OwnerClaimView[];
+  dict: Dictionary;
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
     <FlyerCard id={item.id}>
       {isEditing ? (
-        <EditListingForm item={item} onCancel={() => setIsEditing(false)} />
+        <EditListingForm item={item} onCancel={() => setIsEditing(false)} dict={dict} />
       ) : (
         <>
           <div className="flex gap-4">
@@ -35,24 +38,24 @@ export function ListingCard({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="font-stamp text-xs uppercase tracking-wide text-ink-faint">
-                    {item.type}
+                    {dict.itemType[item.type]}
                   </p>
                   <h3 className="font-display text-lg font-bold leading-tight text-ink">
                     {item.title}
                   </h3>
                 </div>
-                <StampBadge status={item.status} />
+                <StampBadge status={item.status} label={dict.itemStatus[item.status]} />
               </div>
               <p className="mt-1 text-sm text-ink-faint">
-                {item.category} · {item.location}
+                {dict.categories[item.category]} · {item.location}
               </p>
               <p className="text-xs text-ink-faint">{formatItemDate(item.item_date)}</p>
             </div>
           </div>
 
-          <ListingActions item={item} onEdit={() => setIsEditing(true)} />
+          <ListingActions item={item} onEdit={() => setIsEditing(true)} dict={dict} />
 
-          {item.type === "found" && <ClaimsList claims={claims} />}
+          {item.type === "found" && <ClaimsList claims={claims} dict={dict} />}
         </>
       )}
     </FlyerCard>

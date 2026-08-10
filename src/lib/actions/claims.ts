@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getDictionary } from "@/lib/i18n/locale";
 
 export async function acceptClaim(claimId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -20,6 +21,7 @@ export async function acceptClaim(claimId: string): Promise<{ error: string | nu
 
 export async function rejectClaim(claimId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
+  const { dict } = await getDictionary();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,7 +35,7 @@ export async function rejectClaim(claimId: string): Promise<{ error: string | nu
     .select("id");
 
   if (error) return { error: error.message };
-  if (!data || data.length === 0) return { error: "Not authorized." };
+  if (!data || data.length === 0) return { error: dict.errors.notAuthorized };
 
   revalidatePath("/my-listings");
   return { error: null };

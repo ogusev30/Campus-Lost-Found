@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bitter, Work_Sans, Permanent_Marker } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { getDictionary } from "@/lib/i18n/locale";
 import "./globals.css";
 
 const bitter = Bitter({
@@ -28,16 +29,32 @@ export const metadata: Metadata = {
     "Find it. Report it. Get it back. The campus board for lost and found items.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale, dict } = await getDictionary();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${bitter.variable} ${workSans.variable} ${permanentMarker.variable} h-full`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="flex h-screen overflow-hidden">
-        <Sidebar />
+        <Sidebar dict={dict.nav} />
         <div className="flex h-screen flex-1 flex-col overflow-hidden">
-          <Header />
+          <Header dict={dict.nav} locale={locale} />
           <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
       </body>

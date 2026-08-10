@@ -3,15 +3,22 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ItemType } from "@/lib/types/database.types";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
-export function LostFoundToggle({ defaultValue = "lost" }: { defaultValue?: ItemType }) {
+export function LostFoundToggle({
+  defaultValue = "lost",
+  label,
+  itemType,
+}: {
+  defaultValue?: ItemType;
+  label: string;
+  itemType: Dictionary["itemType"];
+}) {
   const [value, setValue] = useState<ItemType>(defaultValue);
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="font-display text-sm font-semibold text-ink">
-        Lost or Found?
-      </span>
+      <span className="font-display text-sm font-semibold text-ink">{label}</span>
       <div className="flex overflow-hidden rounded-flyer border-2 border-ink">
         {(["lost", "found"] as const).map((option) => (
           <button
@@ -27,7 +34,7 @@ export function LostFoundToggle({ defaultValue = "lost" }: { defaultValue?: Item
                 : "bg-paper text-ink hover:bg-ink/5",
             )}
           >
-            {option}
+            {itemType[option]}
           </button>
         ))}
       </div>

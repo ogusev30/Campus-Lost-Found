@@ -3,13 +3,18 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { validateImageFile } from "@/lib/validation/imageValidation";
 import { cn } from "@/lib/utils";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function ImageUploadField({
   defaultPreviewUrl,
   required = !defaultPreviewUrl,
+  dict,
+  errors,
 }: {
   defaultPreviewUrl?: string;
   required?: boolean;
+  dict: Dictionary["report"];
+  errors: Dictionary["errors"];
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(defaultPreviewUrl ?? null);
@@ -23,7 +28,7 @@ export function ImageUploadField({
       return;
     }
 
-    const validationError = validateImageFile(file);
+    const validationError = validateImageFile(file, errors);
     if (validationError) {
       setError(validationError);
       setPreview(defaultPreviewUrl ?? null);
@@ -64,7 +69,7 @@ export function ImageUploadField({
   return (
     <div className="flex flex-col gap-1.5">
       <span className="font-display text-sm font-semibold text-ink">
-        Upload Photo
+        {dict.uploadLabel}
       </span>
 
       <label
@@ -89,12 +94,10 @@ export function ImageUploadField({
         ) : (
           <>
             <span className="pointer-events-none font-display text-sm font-semibold text-ink">
-              {isDragging
-                ? "Drop the image here"
-                : "Drag & drop an image, or click to browse"}
+              {isDragging ? dict.dropActive : dict.dropPrompt}
             </span>
             <span className="pointer-events-none text-xs text-ink-faint">
-              JPG, JPEG, PNG up to 5MB
+              {dict.uploadHint}
             </span>
           </>
         )}

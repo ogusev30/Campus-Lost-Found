@@ -1,15 +1,20 @@
+import type { Dictionary } from "@/lib/i18n/dictionary";
+
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-export function validateImageFile(file: File | null): string | null {
+export function validateImageFile(
+  file: File | null,
+  errors: Dictionary["errors"],
+): string | null {
   if (!file || file.size === 0) {
-    return "An item photo is required.";
+    return errors.imageRequired;
   }
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return "Image must be a JPG, JPEG, or PNG file.";
+    return errors.imageType;
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    return "Image must be 5MB or smaller.";
+    return errors.imageSize;
   }
   return null;
 }

@@ -1,6 +1,16 @@
 import type { Config } from "tailwindcss";
 
+function withOpacity(variableName: string) {
+  return ({ opacityValue }: { opacityValue?: string }) => {
+    if (opacityValue !== undefined) {
+      return `rgba(var(${variableName}), ${opacityValue})`;
+    }
+    return `rgb(var(${variableName}))`;
+  };
+}
+
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,41 +18,44 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Tailwind's Config type doesn't model function-valued colors (needed
+      // for the CSS-variable + opacity-modifier pattern), so cast to `any`.
       colors: {
         paper: {
-          DEFAULT: "#F0E4D0",
-          dark: "#DCC6A5",
-          darker: "#E6D3BB",
+          DEFAULT: withOpacity("--color-paper"),
+          dark: withOpacity("--color-paper-dark"),
+          darker: withOpacity("--color-paper-darker"),
         },
         ink: {
-          DEFAULT: "#1B2A4A",
-          light: "#2E4269",
-          faint: "#5A6B8C",
+          DEFAULT: withOpacity("--color-ink"),
+          light: withOpacity("--color-ink-light"),
+          faint: withOpacity("--color-ink-faint"),
         },
         mustard: {
-          DEFAULT: "#D8A322",
-          dark: "#B4841A",
-          light: "#F0C862",
+          DEFAULT: withOpacity("--color-mustard"),
+          dark: withOpacity("--color-mustard-dark"),
+          light: withOpacity("--color-mustard-light"),
         },
         brick: {
-          DEFAULT: "#B3452C",
-          dark: "#8F3521",
-          light: "#D46B4C",
+          DEFAULT: withOpacity("--color-brick"),
+          dark: withOpacity("--color-brick-dark"),
+          light: withOpacity("--color-brick-light"),
         },
         cork: {
-          DEFAULT: "#8B6F47",
-          dark: "#6B5535",
+          DEFAULT: withOpacity("--color-cork"),
+          dark: withOpacity("--color-cork-dark"),
         },
-      },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       fontFamily: {
         display: ["var(--font-bitter)", "Georgia", "serif"],
         body: ["var(--font-work-sans)", "Helvetica", "Arial", "sans-serif"],
         stamp: ["var(--font-permanent-marker)", "cursive"],
       },
       boxShadow: {
-        flyer: "2px 4px 0 rgba(27,42,74,0.12), 0 8px 16px rgba(27,42,74,0.10)",
+        flyer: "2px 4px 0 rgba(var(--color-ink), 0.12), 0 8px 16px rgba(var(--color-ink), 0.10)",
         "flyer-hover":
-          "3px 6px 0 rgba(27,42,74,0.16), 0 12px 24px rgba(27,42,74,0.14)",
+          "3px 6px 0 rgba(var(--color-ink), 0.16), 0 12px 24px rgba(var(--color-ink), 0.14)",
         pin: "0 2px 3px rgba(0,0,0,0.35)",
       },
       borderRadius: {
@@ -50,7 +63,7 @@ const config: Config = {
       },
       backgroundImage: {
         "paper-grain":
-          "radial-gradient(circle at 1px 1px, rgba(27,42,74,0.08) 1px, transparent 0)",
+          "radial-gradient(circle at 1px 1px, rgba(var(--color-ink), 0.08) 1px, transparent 0)",
       },
       backgroundSize: {
         grain: "18px 18px",

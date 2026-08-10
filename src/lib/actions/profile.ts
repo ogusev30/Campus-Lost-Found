@@ -2,16 +2,18 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getDictionary } from "@/lib/i18n/locale";
 
 export async function saveProfileName(
   _prevState: { error: string | null },
   formData: FormData,
 ): Promise<{ error: string | null }> {
+  const { dict } = await getDictionary();
   const name = String(formData.get("name") ?? "").trim();
   const next = String(formData.get("next") ?? "/my-listings");
 
   if (!name) {
-    return { error: "Please enter your full name." };
+    return { error: dict.errors.nameRequired };
   }
 
   const supabase = await createClient();
