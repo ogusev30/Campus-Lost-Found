@@ -34,11 +34,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${bitter.variable} ${workSans.variable} ${permanentMarker.variable} h-full`}
     >
-      <body className="flex min-h-full">
+      <body className="flex h-screen overflow-hidden">
         <Sidebar />
-        <div className="flex min-h-full flex-1 flex-col">
+        <div className="flex h-screen flex-1 flex-col overflow-hidden">
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
       </body>
     </html>

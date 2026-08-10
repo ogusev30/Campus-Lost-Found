@@ -8,11 +8,11 @@ export async function Header() {
   const session = await getCurrentUser();
 
   return (
-    <header className="border-b-2 border-ink/10 bg-paper-dark">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 md:justify-end">
+    <header className="flex-shrink-0 border-b-2 border-ink/10 bg-paper-dark">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 font-display text-xl font-bold text-ink md:hidden"
+          className="flex items-center gap-2 font-display text-xl font-bold text-ink"
         >
           <Logo size={24} />
           Campus <span className="text-brick">&amp;</span> Found
