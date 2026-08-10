@@ -2,33 +2,38 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/auth-helpers";
 import { signOut } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export async function Header() {
   const session = await getCurrentUser();
 
   return (
     <header className="border-b-2 border-ink/10 bg-paper-dark">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <Link href="/" className="font-display text-xl font-bold text-ink">
-          Campus Lost <span className="text-brick">&amp;</span> Found
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 md:justify-end">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display text-xl font-bold text-ink md:hidden"
+        >
+          <Logo size={24} />
+          Campus <span className="text-brick">&amp;</span> Found
         </Link>
 
         <nav className="flex flex-wrap items-center gap-3 text-sm">
           <Link
             href="/browse"
-            className="font-display font-semibold text-ink hover:text-brick"
+            className="font-display font-semibold text-ink hover:text-brick md:hidden"
           >
             Browse Items
           </Link>
           <Link
             href="/report"
-            className="font-display font-semibold text-ink hover:text-brick"
+            className="font-display font-semibold text-ink hover:text-brick md:hidden"
           >
             Report Item
           </Link>
 
           {session ? (
-            <div className="flex items-center gap-3 border-l-2 border-ink/10 pl-3">
+            <div className="flex items-center gap-3 border-l-2 border-ink/10 pl-3 md:border-l-0 md:pl-0">
               <div className="leading-tight">
                 <p className="font-display font-semibold text-ink">
                   {session.profile?.name ?? "Unnamed user"}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bitter, Work_Sans, Permanent_Marker } from "next/font/google";
 import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
 import "./globals.css";
 
 const bitter = Bitter({
@@ -33,9 +34,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${bitter.variable} ${workSans.variable} ${permanentMarker.variable} h-full`}
     >
-      <body className="flex min-h-full flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
+      <body className="flex min-h-full">
+        <Sidebar />
+        <div className="flex min-h-full flex-1 flex-col">
+          <Header />
+          <main className="flex-1">{children}</main>
+        </div>
       </body>
     </html>
   );
