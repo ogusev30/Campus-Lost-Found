@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/locale";
+import { syncAchievementUnlocks } from "@/lib/achievements/notify";
 
 export async function acceptClaim(claimId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -14,6 +15,8 @@ export async function acceptClaim(claimId: string): Promise<{ error: string | nu
 
   const { error } = await supabase.rpc("accept_claim", { claim_id_input: claimId });
   if (error) return { error: error.message };
+
+  await syncAchievementUnlocks(supabase, user.id);
 
   revalidatePath("/my-listings");
   return { error: null };

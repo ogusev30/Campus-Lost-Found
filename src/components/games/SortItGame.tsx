@@ -40,9 +40,11 @@ function nextRound(items: SortItItem[], lastName: string | null) {
 
 export function SortItGame({
   dict,
+  shared,
   categories,
 }: {
   dict: Dictionary["games"]["sortIt"];
+  shared: Pick<Dictionary["games"], "saveError" | "retryCta">;
   categories: Dictionary["categories"];
 }) {
   const [round, setRound] = useState(() => nextRound(dict.items, null));
@@ -50,7 +52,8 @@ export function SortItGame({
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [isNewBest, setIsNewBest] = useState(false);
-  const savedRef = useRef(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const attemptedRef = useRef(false);
   const gameOver = timeLeft <= 0;
 
   useEffect(() => {
@@ -59,12 +62,27 @@ export function SortItGame({
     return () => clearTimeout(timer);
   }, [timeLeft, gameOver]);
 
+  function submitScore() {
+    setSaveState("saving");
+    saveGameScore("sort_it", score)
+      .then((result) => {
+        if (result.error) {
+          setSaveState("error");
+          return;
+        }
+        setIsNewBest(result.isNewBest);
+        setSaveState("saved");
+      })
+      .catch(() => setSaveState("error"));
+  }
+
   useEffect(() => {
-    if (gameOver && !savedRef.current) {
-      savedRef.current = true;
-      saveGameScore("sort_it", score).then((result) => setIsNewBest(result.isNewBest));
+    if (gameOver && !attemptedRef.current) {
+      attemptedRef.current = true;
+      submitScore();
     }
-  }, [gameOver, score]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameOver]);
 
   function handleAnswer(category: Category) {
     if (feedback || gameOver) return;
@@ -83,7 +101,8 @@ export function SortItGame({
     setScore(0);
     setFeedback(null);
     setIsNewBest(false);
-    savedRef.current = false;
+    setSaveState("idle");
+    attemptedRef.current = false;
     setRound(nextRound(dict.items, null));
     setTimeLeft(ROUND_SECONDS);
   }
@@ -95,6 +114,18 @@ export function SortItGame({
         <p className="mt-2 text-ink-faint">{formatMessage(dict.gameOverScore, { score })}</p>
         {isNewBest && (
           <p className="mt-2 font-stamp text-mustard-dark">{dict.newBest}</p>
+        )}
+        {saveState === "error" && (
+          <div className="mt-2">
+            <p className="text-sm text-brick">{shared.saveError}</p>
+            <button
+              type="button"
+              onClick={submitScore}
+              className="mt-1 font-display text-sm font-semibold text-ink underline underline-offset-2"
+            >
+              {shared.retryCta}
+            </button>
+          </div>
         )}
         <Button variant="primary" className="mt-6" onClick={restart}>
           {dict.title}

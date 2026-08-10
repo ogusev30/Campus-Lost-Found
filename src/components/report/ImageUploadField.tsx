@@ -70,6 +70,11 @@ export function ImageUploadField({
     <div className="flex flex-col gap-1.5">
       <span className="font-display text-sm font-semibold text-ink">
         {dict.uploadLabel}
+        {!required && (
+          <span className="ml-1 font-body text-xs font-normal text-ink-faint">
+            {dict.optionalLabel}
+          </span>
+        )}
       </span>
 
       <label

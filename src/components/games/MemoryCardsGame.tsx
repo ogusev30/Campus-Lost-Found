@@ -28,11 +28,18 @@ function buildDeck(): Card[] {
   return deck;
 }
 
-export function MemoryCardsGame({ dict }: { dict: Dictionary["games"]["memoryCards"] }) {
+export function MemoryCardsGame({
+  dict,
+  shared,
+}: {
+  dict: Dictionary["games"]["memoryCards"];
+  shared: Pick<Dictionary["games"], "saveError" | "retryCta">;
+}) {
   const [deck, setDeck] = useState<Card[]>(() => buildDeck());
   const [flipped, setFlipped] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
-  const savedRef = useRef(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const attemptedRef = useRef(false);
   const won = deck.every((card) => card.isMatched);
 
   useEffect(() => {
@@ -57,10 +64,19 @@ export function MemoryCardsGame({ dict }: { dict: Dictionary["games"]["memoryCar
     }
   }, [flipped, deck]);
 
+  function submitScore() {
+    setSaveState("saving");
+    saveGameScore("memory_cards", 1)
+      .then((result) => {
+        setSaveState(result.error ? "error" : "saved");
+      })
+      .catch(() => setSaveState("error"));
+  }
+
   useEffect(() => {
-    if (won && !savedRef.current) {
-      savedRef.current = true;
-      saveGameScore("memory_cards", 1);
+    if (won && !attemptedRef.current) {
+      attemptedRef.current = true;
+      submitScore();
     }
   }, [won]);
 
@@ -75,7 +91,8 @@ export function MemoryCardsGame({ dict }: { dict: Dictionary["games"]["memoryCar
     setDeck(buildDeck());
     setFlipped([]);
     setMoves(0);
-    savedRef.current = false;
+    setSaveState("idle");
+    attemptedRef.current = false;
   }
 
   if (won) {
@@ -83,6 +100,21 @@ export function MemoryCardsGame({ dict }: { dict: Dictionary["games"]["memoryCar
       <div className="mx-auto max-w-sm rounded-flyer border-2 border-ink bg-paper-dark p-8 text-center shadow-flyer">
         <p className="font-display text-xl font-bold text-ink">{dict.winTitle}</p>
         <p className="mt-2 text-ink-faint">{formatMessage(dict.winBody, { moves })}</p>
+        {saveState === "saved" && (
+          <p className="mt-2 font-stamp text-mustard-dark">{dict.starEarned}</p>
+        )}
+        {saveState === "error" && (
+          <div className="mt-2">
+            <p className="text-sm text-brick">{shared.saveError}</p>
+            <button
+              type="button"
+              onClick={submitScore}
+              className="mt-1 font-display text-sm font-semibold text-ink underline underline-offset-2"
+            >
+              {shared.retryCta}
+            </button>
+          </div>
+        )}
         <Button variant="primary" className="mt-6" onClick={restart}>
           {dict.title}
         </Button>

@@ -32,7 +32,7 @@ export interface Item {
   category: Category;
   location: string;
   item_date: string;
-  image_url: string;
+  image_url: string | null;
   status: ItemStatus;
   created_at: string;
   updated_at: string;
@@ -56,4 +56,45 @@ export interface OwnerClaimView {
   message: string;
   status: ClaimStatus;
   created_at: string;
+}
+
+export interface ItemMatch {
+  id: string;
+  lost_item_id: string;
+  found_item_id: string;
+  score: number;
+  dismissed_by_lost_owner: boolean;
+  dismissed_by_found_owner: boolean;
+  created_at: string;
+}
+
+export type NotificationType =
+  | "match_found"
+  | "claim_accepted"
+  | "item_returned"
+  | "achievement_unlocked";
+
+export interface NotificationPayload {
+  itemId?: string;
+  itemTitle?: string;
+  matchedItemId?: string;
+  matchedItemTitle?: string;
+  score?: number;
+  achievementId?: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  payload: NotificationPayload;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}
+
+export interface LeaderboardRow {
+  user_id: string;
+  name: string | null;
+  points: number;
 }

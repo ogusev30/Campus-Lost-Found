@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { syncAchievementUnlocks } from "@/lib/achievements/notify";
 
 export type GameKey = "sort_it" | "memory_cards";
 
@@ -40,6 +41,8 @@ export async function saveGameScore(
 
     if (error) return { error: error.message, isNewBest: false };
   }
+
+  await syncAchievementUnlocks(supabase, user.id);
 
   revalidatePath("/achievements");
   revalidatePath("/games");

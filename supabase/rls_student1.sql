@@ -70,14 +70,20 @@ create policy "item_images_delete_own_folder" on storage.objects
   );
 
 -- Atomic accept: selected claim -> accepted, item -> claimed,
--- every other pending claim on that same item -> rejected.
+-- every other pending claim on that same item -> rejected. Runs as
+-- security definer (rather than the previous invoker) so it can also
+-- notify the claimant, whose notifications row it wouldn't otherwise be
+-- allowed to insert into under normal RLS.
 create or replace function public.accept_claim(claim_id_input uuid)
 returns void
 language plpgsql
-security invoker
+security definer
+set search_path = public
 as $$
 declare
   v_item_id uuid;
+  v_claimant_id uuid;
+  v_item_title text;
 begin
   if not exists (
     select 1
@@ -88,13 +94,23 @@ begin
     raise exception 'Not authorized to accept this claim';
   end if;
 
-  select item_id into v_item_id from public.claims where id = claim_id_input;
+  select item_id, claimant_id into v_item_id, v_claimant_id
+    from public.claims where id = claim_id_input;
+  select title into v_item_title from public.items where id = v_item_id;
 
   update public.claims set status = 'accepted' where id = claim_id_input;
   update public.items set status = 'claimed' where id = v_item_id;
   update public.claims
     set status = 'rejected'
     where item_id = v_item_id and id <> claim_id_input and status = 'pending';
+
+  insert into public.notifications (user_id, type, payload, link)
+  values (
+    v_claimant_id,
+    'claim_accepted',
+    jsonb_build_object('itemId', v_item_id, 'itemTitle', v_item_title),
+    '/my-listings'
+  );
 end;
 $$;
 
@@ -149,3 +165,76 @@ create policy "game_scores_insert_own" on public.game_scores
 
 create policy "game_scores_update_own" on public.game_scores
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Smart Match: visible/writable by whichever side (lost or found owner) is
+-- the caller. Both owners can insert (whichever item was reported second
+-- triggers the match) and update (e.g. to dismiss their side of it).
+create policy "item_matches_select_owner" on public.item_matches
+  for select using (
+    exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
+    or exists (select 1 from public.items i where i.id = found_item_id and i.owner_id = auth.uid())
+  );
+
+create policy "item_matches_insert_owner" on public.item_matches
+  for insert with check (
+    exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
+    or exists (select 1 from public.items i where i.id = found_item_id and i.owner_id = auth.uid())
+  );
+
+create policy "item_matches_update_owner" on public.item_matches
+  for update using (
+    exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
+    or exists (select 1 from public.items i where i.id = found_item_id and i.owner_id = auth.uid())
+  );
+
+-- Notifications: everyone can read/mark-read their own. Direct insert is
+-- only allowed for self-notifications (match_found, item_returned,
+-- achievement_unlocked); the one cross-user case (claim_accepted) is
+-- inserted by the security-definer accept_claim() function above instead.
+create policy "notifications_select_own" on public.notifications
+  for select using (auth.uid() = user_id);
+
+create policy "notifications_insert_own" on public.notifications
+  for insert with check (auth.uid() = user_id);
+
+create policy "notifications_update_own" on public.notifications
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Achievement-unlock tracking: read/write own only.
+create policy "achievement_unlocks_select_own" on public.achievement_unlocks
+  for select using (auth.uid() = user_id);
+
+create policy "achievement_unlocks_insert_own" on public.achievement_unlocks
+  for insert with check (auth.uid() = user_id);
+
+-- Leaderboard: points are help-oriented on purpose (mini-game scores are
+-- intentionally excluded, they have their own star/achievement track).
+-- Returning an item is the strongest "helped someone" signal and scores
+-- highest; reporting a lost item is mostly self-serving and scores lowest.
+-- Runs as security definer so it can rank every profile, not just the
+-- caller's own row (profiles otherwise only exposes auth.uid() = id).
+create or replace function public.get_leaderboard()
+returns table (
+  user_id uuid,
+  name text,
+  points integer
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select
+    p.id,
+    p.name,
+    (
+      coalesce((select count(*) from public.items i where i.owner_id = p.id and i.status = 'returned'), 0) * 25
+      + coalesce((select count(*) from public.claims c join public.items i on i.id = c.item_id where i.owner_id = p.id and c.status = 'accepted'), 0) * 10
+      + coalesce((select count(*) from public.items i where i.owner_id = p.id and i.type = 'found'), 0) * 5
+      + coalesce((select count(*) from public.items i where i.owner_id = p.id and i.type = 'lost'), 0) * 1
+    )::integer as points
+  from public.profiles p
+  order by points desc, p.created_at asc;
+$$;
+
+grant execute on function public.get_leaderboard() to authenticated;

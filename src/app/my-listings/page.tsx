@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ListingCard } from "@/components/my-listings/ListingCard";
 import { Button } from "@/components/ui/Button";
 import { getDictionary } from "@/lib/i18n/locale";
+import { computeMatchesForItem } from "@/lib/matching/findMatches";
+import { getMatchesForOwnedItems } from "@/lib/matching/getMatchesForItems";
 import type { Item, OwnerClaimView } from "@/lib/types/database.types";
 
 export default async function MyListingsPage() {
@@ -27,6 +29,18 @@ export default async function MyListingsPage() {
   }
 
   const listings = (items ?? []) as Item[];
+
+  // Opportunistically refresh matches for still-open listings (idempotent —
+  // also catches items reported before Smart Match existed).
+  await Promise.all(
+    listings
+      .filter((item) => item.status === "open")
+      .map((item) => computeMatchesForItem(supabase, item)),
+  );
+  const matchesByItem = await getMatchesForOwnedItems(
+    supabase,
+    listings.map((item) => item.id),
+  );
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
@@ -55,6 +69,7 @@ export default async function MyListingsPage() {
               key={item.id}
               item={item}
               claims={claimsByItem.get(item.id) ?? []}
+              match={matchesByItem.get(item.id) ?? null}
               dict={dict}
             />
           ))}

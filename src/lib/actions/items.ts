@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { parseItemFields } from "@/lib/validation/itemSchema";
 import { validateImageFile } from "@/lib/validation/imageValidation";
 import { getDictionary } from "@/lib/i18n/locale";
+import { computeMatchesForItem } from "@/lib/matching/findMatches";
+import { syncAchievementUnlocks } from "@/lib/achievements/notify";
+import type { Item } from "@/lib/types/database.types";
 
 export interface ItemFormState {
   error: string | null;
@@ -52,31 +55,49 @@ export async function createItem(
   }
 
   const imageFile = formData.get("image") as File | null;
-  const imageError = validateImageFile(imageFile, dict.errors);
-  if (imageError) return { error: imageError, success: false };
+  const hasImage = !!imageFile && imageFile.size > 0;
 
-  let uploaded: { path: string; publicUrl: string };
-  try {
-    uploaded = await uploadItemImage(supabase, user.id, imageFile as File);
-  } catch (err) {
-    return { error: (err as Error).message, success: false };
+  // A photo is only required for "found" items — if you lost something you
+  // may not have a picture of it, but reporting one you found should be
+  // identifiable to whoever it belongs to.
+  if (parsed.data.type === "found" && !hasImage) {
+    return { error: dict.errors.imageRequired, success: false };
   }
 
-  const { error: insertError } = await supabase.from("items").insert({
-    owner_id: user.id,
-    type: parsed.data.type,
-    title: parsed.data.title,
-    description: parsed.data.description,
-    category: parsed.data.category,
-    location: parsed.data.location,
-    item_date: parsed.data.item_date,
-    image_url: uploaded.publicUrl,
-  });
+  let uploaded: { path: string; publicUrl: string } | null = null;
+  if (hasImage) {
+    const imageError = validateImageFile(imageFile, dict.errors);
+    if (imageError) return { error: imageError, success: false };
 
-  if (insertError) {
-    await supabase.storage.from("item-images").remove([uploaded.path]);
-    return { error: insertError.message, success: false };
+    try {
+      uploaded = await uploadItemImage(supabase, user.id, imageFile as File);
+    } catch (err) {
+      return { error: (err as Error).message, success: false };
+    }
   }
+
+  const { data: newItem, error: insertError } = await supabase
+    .from("items")
+    .insert({
+      owner_id: user.id,
+      type: parsed.data.type,
+      title: parsed.data.title,
+      description: parsed.data.description,
+      category: parsed.data.category,
+      location: parsed.data.location,
+      item_date: parsed.data.item_date,
+      image_url: uploaded?.publicUrl ?? null,
+    })
+    .select()
+    .single();
+
+  if (insertError || !newItem) {
+    if (uploaded) await supabase.storage.from("item-images").remove([uploaded.path]);
+    return { error: insertError?.message ?? dict.errors.pleaseCheckForm, success: false };
+  }
+
+  await computeMatchesForItem(supabase, newItem as Item);
+  await syncAchievementUnlocks(supabase, user.id);
 
   revalidatePath("/my-listings");
   return { error: null, success: true };
@@ -112,15 +133,28 @@ export async function updateItem(
   };
 
   const imageFile = formData.get("image") as File | null;
-  if (imageFile && imageFile.size > 0) {
+  const hasNewImage = !!imageFile && imageFile.size > 0;
+
+  if (hasNewImage) {
     const imageError = validateImageFile(imageFile, dict.errors);
     if (imageError) return { error: imageError, success: false };
 
     try {
-      const uploaded = await uploadItemImage(supabase, user.id, imageFile);
+      const uploaded = await uploadItemImage(supabase, user.id, imageFile as File);
       updates.image_url = uploaded.publicUrl;
     } catch (err) {
       return { error: (err as Error).message, success: false };
+    }
+  } else if (parsed.data.type === "found") {
+    // Switched to "found" (or stayed "found") without adding a new photo —
+    // make sure it isn't left with no photo at all.
+    const { data: existing } = await supabase
+      .from("items")
+      .select("image_url")
+      .eq("id", itemId)
+      .single();
+    if (!existing?.image_url) {
+      return { error: dict.errors.imageRequired, success: false };
     }
   }
 
@@ -193,7 +227,7 @@ export async function markReturned(itemId: string): Promise<{ error: string | nu
 
   const { data: item, error: fetchError } = await supabase
     .from("items")
-    .select("type, status, owner_id")
+    .select("type, status, owner_id, title")
     .eq("id", itemId)
     .single();
 
@@ -219,6 +253,14 @@ export async function markReturned(itemId: string): Promise<{ error: string | nu
     .eq("id", itemId);
 
   if (error) return { error: error.message };
+
+  await supabase.from("notifications").insert({
+    user_id: user.id,
+    type: "item_returned",
+    payload: { itemId, itemTitle: item.title },
+    link: "/my-listings",
+  });
+  await syncAchievementUnlocks(supabase, user.id);
 
   revalidatePath("/my-listings");
   return { error: null };

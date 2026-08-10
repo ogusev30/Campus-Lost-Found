@@ -20,7 +20,7 @@ export default async function SortItPage() {
       </h1>
       <p className="mb-8 text-ink-faint">{dict.games.sortIt.instructions}</p>
 
-      <SortItGame dict={dict.games.sortIt} categories={dict.categories} />
+      <SortItGame dict={dict.games.sortIt} shared={dict.games} categories={dict.categories} />
     </div>
   );
 }

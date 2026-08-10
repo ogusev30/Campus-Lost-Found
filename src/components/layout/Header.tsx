@@ -4,9 +4,11 @@ import { signOut } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { StarBadge } from "@/components/ui/StarBadge";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { getAchievementStats } from "@/lib/achievements/getStats";
 import { evaluateAchievements } from "@/lib/achievements/evaluate";
+import { getRecentNotifications } from "@/lib/notifications/getNotifications";
 import { formatMessage } from "@/lib/utils";
 import type { Dictionary, Locale } from "@/lib/i18n/dictionary";
 
@@ -23,6 +25,8 @@ export async function Header({
     ? evaluateAchievements(await getAchievementStats(session.user.id))
     : null;
 
+  const notifications = session ? await getRecentNotifications(session.user.id) : [];
+
   return (
     <header className="flex-shrink-0 border-b-2 border-ink/10 bg-paper-dark">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -35,20 +39,9 @@ export async function Header({
         </Link>
 
         <nav className="flex flex-wrap items-center gap-3 text-sm">
-          <Link
-            href="/browse"
-            className="font-display font-semibold text-ink hover:text-brick md:hidden"
-          >
-            {dict.nav.browseItems}
-          </Link>
-          <Link
-            href="/report"
-            className="font-display font-semibold text-ink hover:text-brick md:hidden"
-          >
-            {dict.nav.reportItem}
-          </Link>
-
           <LanguageToggle locale={locale} />
+
+          {session && <NotificationBell notifications={notifications} dict={dict} />}
 
           {session && stars && (
             <Link href="/achievements">

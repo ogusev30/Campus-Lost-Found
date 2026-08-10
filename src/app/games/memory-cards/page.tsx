@@ -20,7 +20,7 @@ export default async function MemoryCardsPage() {
       </h1>
       <p className="mb-8 text-ink-faint">{dict.games.memoryCards.instructions}</p>
 
-      <MemoryCardsGame dict={dict.games.memoryCards} />
+      <MemoryCardsGame dict={dict.games.memoryCards} shared={dict.games} />
     </div>
   );
 }

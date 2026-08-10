@@ -1,4 +1,7 @@
-import type { Item } from "@/lib/types/database.types";
+"use client";
+
+import { useState } from "react";
+import type { Item, ItemType } from "@/lib/types/database.types";
 import { LostFoundToggle } from "@/components/report/LostFoundToggle";
 import { ImageUploadField } from "@/components/report/ImageUploadField";
 import type { Dictionary } from "@/lib/i18n/dictionary";
@@ -20,10 +23,14 @@ export function ItemFormFields({
   itemType: Dictionary["itemType"];
   errors: Dictionary["errors"];
 }) {
+  const [type, setType] = useState<ItemType>(defaults?.type ?? "lost");
+  const isLost = type === "lost";
+
   return (
     <div className="flex flex-col gap-5">
       <LostFoundToggle
-        defaultValue={defaults?.type ?? "lost"}
+        value={type}
+        onChange={setType}
         label={dict.lostFoundLabel}
         itemType={itemType}
       />
@@ -47,7 +54,7 @@ export function ItemFormFields({
           required
           rows={4}
           defaultValue={defaults?.description}
-          placeholder={dict.descriptionPlaceholder}
+          placeholder={isLost ? dict.descriptionPlaceholderLost : dict.descriptionPlaceholderFound}
           className={fieldClasses}
         />
       </label>
@@ -72,9 +79,7 @@ export function ItemFormFields({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className={labelClasses}>
-          {defaults?.type === "found" || !defaults ? dict.dateFoundLabel : dict.dateLostLabel}
-        </span>
+        <span className={labelClasses}>{isLost ? dict.dateLostLabel : dict.dateFoundLabel}</span>
         <input
           type="date"
           name="item_date"
@@ -85,7 +90,9 @@ export function ItemFormFields({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className={labelClasses}>{dict.locationLabel}</span>
+        <span className={labelClasses}>
+          {isLost ? dict.locationLabelLost : dict.locationLabelFound}
+        </span>
         <input
           type="text"
           name="location"
@@ -96,7 +103,12 @@ export function ItemFormFields({
         />
       </label>
 
-      <ImageUploadField defaultPreviewUrl={defaults?.image_url} dict={dict} errors={errors} />
+      <ImageUploadField
+        defaultPreviewUrl={defaults?.image_url ?? undefined}
+        required={!isLost && !defaults?.image_url}
+        dict={dict}
+        errors={errors}
+      />
     </div>
   );
 }

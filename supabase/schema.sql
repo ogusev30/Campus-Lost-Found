@@ -22,7 +22,9 @@ create table if not exists public.items (
   )),
   location text not null,
   item_date date not null,
-  image_url text not null,
+  -- Nullable: a photo is only required when reporting a found item (you may
+  -- not have one for something you lost).
+  image_url text,
   status text not null default 'open' check (status in ('open', 'claimed', 'returned', 'closed')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -49,10 +51,52 @@ create table if not exists public.game_scores (
   primary key (user_id, game)
 );
 
+-- Smart Match: best-match pairing between a lost item and a found item,
+-- scored 0-100 by src/lib/matching/score.ts and recomputed whenever a
+-- relevant page loads. One row per unordered (lost, found) pair.
+create table if not exists public.item_matches (
+  id uuid primary key default gen_random_uuid(),
+  lost_item_id uuid not null references public.items(id) on delete cascade,
+  found_item_id uuid not null references public.items(id) on delete cascade,
+  score integer not null check (score between 0 and 100),
+  dismissed_by_lost_owner boolean not null default false,
+  dismissed_by_found_owner boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (lost_item_id, found_item_id)
+);
+
+-- Notification center. `payload` is structured (not pre-rendered text) so
+-- notifications render in whichever language the viewer currently has
+-- active, same as the rest of the app.
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  type text not null check (type in (
+    'match_found', 'claim_accepted', 'item_returned', 'achievement_unlocked'
+  )),
+  payload jsonb not null default '{}'::jsonb,
+  link text,
+  read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- Insert-only marker of which achievements a user has already unlocked, so
+-- notifications can fire once on the transition into "unlocked" rather than
+-- every time the (otherwise always-recomputed) achievement stats are read.
+create table if not exists public.achievement_unlocks (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  achievement_id text not null,
+  unlocked_at timestamptz not null default now(),
+  primary key (user_id, achievement_id)
+);
+
 create index if not exists items_owner_id_idx on public.items(owner_id);
 create index if not exists items_status_idx on public.items(status);
 create index if not exists claims_item_id_idx on public.claims(item_id);
 create index if not exists claims_claimant_id_idx on public.claims(claimant_id);
+create index if not exists item_matches_lost_item_id_idx on public.item_matches(lost_item_id);
+create index if not exists item_matches_found_item_id_idx on public.item_matches(found_item_id);
+create index if not exists notifications_user_id_idx on public.notifications(user_id, created_at desc);
 
 -- Auto-create a profile row (email pre-filled, name null) whenever a new auth user signs up.
 create or replace function public.handle_new_user()
@@ -93,6 +137,9 @@ alter table public.profiles enable row level security;
 alter table public.items enable row level security;
 alter table public.claims enable row level security;
 alter table public.game_scores enable row level security;
+alter table public.item_matches enable row level security;
+alter table public.notifications enable row level security;
+alter table public.achievement_unlocks enable row level security;
 
 -- Genuinely shared read policy: any logged-in user can browse the board
 -- (serves both Student 1's own-listing views and Student 2's browse/search).

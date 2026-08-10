@@ -16,6 +16,13 @@ function navLinkClasses(active: boolean) {
   );
 }
 
+function mobileNavLinkClasses(active: boolean) {
+  return cn(
+    "flex flex-1 flex-col items-center gap-0.5 rounded-flyer px-1 py-1.5 font-display text-[10px] font-semibold leading-tight transition-colors",
+    active ? "text-ink" : "text-ink-faint",
+  );
+}
+
 export function Sidebar({ dict }: { dict: Dictionary["nav"] }) {
   const pathname = usePathname();
 
@@ -24,39 +31,53 @@ export function Sidebar({ dict }: { dict: Dictionary["nav"] }) {
     { href: "/report", label: dict.reportItem, icon: PlusCircleIcon },
     { href: "/my-listings", label: dict.myListings, icon: StackIcon },
     { href: "/achievements", label: dict.achievements, icon: StarOutlineIcon },
+    { href: "/leaderboard", label: dict.leaderboard, icon: TrophyIcon },
     { href: "/games", label: dict.games, icon: DiceIcon },
   ];
 
   return (
-    <aside className="hidden w-56 flex-shrink-0 flex-col overflow-y-auto border-r-2 border-ink/10 bg-paper-dark md:flex">
-      <Link
-        href="/"
-        className="flex items-center gap-2 border-b-2 border-ink/10 px-5 py-5"
-      >
-        <Logo size={26} />
-        <span className="font-display text-base font-bold leading-tight text-ink">
-          Campus
-          <br />
-          Lost &amp; Found
-        </span>
-      </Link>
-
-      <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-        {navItems.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className={navLinkClasses(pathname === href)}>
-            <Icon className="h-4 w-4 flex-shrink-0" />
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="border-t-2 border-dashed border-ink/15 px-3 py-4">
-        <Link href="/settings" className={navLinkClasses(pathname === "/settings")}>
-          <GearIcon className="h-4 w-4 flex-shrink-0" />
-          {dict.settings}
+    <>
+      <aside className="hidden w-56 flex-shrink-0 flex-col overflow-y-auto border-r-2 border-ink/10 bg-paper-dark md:flex">
+        <Link
+          href="/"
+          className="flex items-center gap-2 border-b-2 border-ink/10 px-5 py-5"
+        >
+          <Logo size={26} />
+          <span className="font-display text-base font-bold leading-tight text-ink">
+            Campus
+            <br />
+            Lost &amp; Found
+          </span>
         </Link>
-      </div>
-    </aside>
+
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
+          {navItems.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} className={navLinkClasses(pathname === href)}>
+              <Icon className="h-4 w-4 flex-shrink-0" />
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="border-t-2 border-dashed border-ink/15 px-3 py-4">
+          <Link href="/settings" className={navLinkClasses(pathname === "/settings")}>
+            <GearIcon className="h-4 w-4 flex-shrink-0" />
+            {dict.settings}
+          </Link>
+        </div>
+      </aside>
+
+      <nav className="fixed inset-x-0 bottom-0 z-20 flex items-stretch justify-between border-t-2 border-ink/10 bg-paper-dark px-1 py-1 [padding-bottom:env(safe-area-inset-bottom)] md:hidden">
+        {[...navItems, { href: "/settings", label: dict.settings, icon: GearIcon }].map(
+          ({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} className={mobileNavLinkClasses(pathname === href)}>
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{label}</span>
+            </Link>
+          ),
+        )}
+      </nav>
+    </>
   );
 }
 
@@ -124,6 +145,24 @@ function StarOutlineIcon(props: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <path d="M12 3.5l2.6 5.4 5.9.66-4.35 4.05 1.13 5.9L12 16.85l-5.28 2.66 1.13-5.9-4.35-4.05 5.9-.66L12 3.5z" />
+    </svg>
+  );
+}
+
+function TrophyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M7 4h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4Z" />
+      <path d="M7 5H4.5a1.5 1.5 0 0 0 0 3H7M17 5h2.5a1.5 1.5 0 0 1 0 3H17" />
+      <path d="M12 13v3M9 20h6M10 20v-2.2c0-.4.3-.7.7-.8h2.6c.4 0 .7.4.7.8V20" />
     </svg>
   );
 }

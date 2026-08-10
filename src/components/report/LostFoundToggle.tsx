@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ItemType } from "@/lib/types/database.types";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function LostFoundToggle({
-  defaultValue = "lost",
+  value,
+  onChange,
   label,
   itemType,
 }: {
-  defaultValue?: ItemType;
+  value: ItemType;
+  onChange: (value: ItemType) => void;
   label: string;
   itemType: Dictionary["itemType"];
 }) {
-  const [value, setValue] = useState<ItemType>(defaultValue);
-
   return (
     <div className="flex flex-col gap-1.5">
       <span className="font-display text-sm font-semibold text-ink">{label}</span>
@@ -24,7 +23,7 @@ export function LostFoundToggle({
           <button
             key={option}
             type="button"
-            onClick={() => setValue(option)}
+            onClick={() => onChange(option)}
             className={cn(
               "flex-1 px-4 py-2 font-display text-sm font-semibold uppercase tracking-wide transition-colors",
               value === option
