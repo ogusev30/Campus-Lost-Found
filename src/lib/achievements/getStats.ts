@@ -9,6 +9,7 @@ export async function getAchievementStats(userId: string): Promise<AchievementSt
     { count: itemsReturned },
     { count: claimsAccepted },
     { data: ownedItems },
+    { data: gameScores },
   ] = await Promise.all([
     supabase
       .from("items")
@@ -26,9 +27,11 @@ export async function getAchievementStats(userId: string): Promise<AchievementSt
       .select("id", { count: "exact", head: true })
       .eq("status", "accepted"),
     supabase.from("items").select("type").eq("owner_id", userId),
+    supabase.from("game_scores").select("game, best_score").eq("user_id", userId),
   ]);
 
   const types = new Set((ownedItems ?? []).map((item) => item.type));
+  const scores = new Map((gameScores ?? []).map((row) => [row.game, row.best_score]));
 
   return {
     itemsReported: itemsReported ?? 0,
@@ -36,5 +39,7 @@ export async function getAchievementStats(userId: string): Promise<AchievementSt
     claimsAccepted: claimsAccepted ?? 0,
     hasLostReport: types.has("lost"),
     hasFoundReport: types.has("found"),
+    sortItBestScore: scores.get("sort_it") ?? 0,
+    memoryCardsCompleted: (scores.get("memory_cards") ?? 0) >= 1,
   };
 }

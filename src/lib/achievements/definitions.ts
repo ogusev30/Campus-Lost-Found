@@ -3,7 +3,9 @@ export type AchievementId =
   | "prolificReporter"
   | "fullCircle"
   | "greatFinder"
-  | "trustedOwner";
+  | "trustedOwner"
+  | "sortItChampion"
+  | "memoryMaster";
 
 export interface AchievementStats {
   itemsReported: number;
@@ -11,6 +13,8 @@ export interface AchievementStats {
   claimsAccepted: number;
   hasLostReport: boolean;
   hasFoundReport: boolean;
+  sortItBestScore: number;
+  memoryCardsCompleted: boolean;
 }
 
 interface AchievementDef {
@@ -18,6 +22,8 @@ interface AchievementDef {
   threshold: number;
   current: (stats: AchievementStats) => number;
 }
+
+export const SORT_IT_WIN_SCORE = 10;
 
 export const ACHIEVEMENTS: AchievementDef[] = [
   {
@@ -45,5 +51,15 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     id: "trustedOwner",
     threshold: 3,
     current: (stats) => Math.min(stats.claimsAccepted, 3),
+  },
+  {
+    id: "sortItChampion",
+    threshold: SORT_IT_WIN_SCORE,
+    current: (stats) => Math.min(stats.sortItBestScore, SORT_IT_WIN_SCORE),
+  },
+  {
+    id: "memoryMaster",
+    threshold: 1,
+    current: (stats) => (stats.memoryCardsCompleted ? 1 : 0),
   },
 ];

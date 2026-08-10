@@ -24,6 +24,7 @@ export function Sidebar({ dict }: { dict: Dictionary["nav"] }) {
     { href: "/report", label: dict.reportItem, icon: PlusCircleIcon },
     { href: "/my-listings", label: dict.myListings, icon: StackIcon },
     { href: "/achievements", label: dict.achievements, icon: StarOutlineIcon },
+    { href: "/games", label: dict.games, icon: DiceIcon },
   ];
 
   return (
@@ -123,6 +124,27 @@ function StarOutlineIcon(props: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <path d="M12 3.5l2.6 5.4 5.9.66-4.35 4.05 1.13 5.9L12 16.85l-5.28 2.66 1.13-5.9-4.35-4.05 5.9-.66L12 3.5z" />
+    </svg>
+  );
+}
+
+function DiceIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <circle cx="8.3" cy="8.3" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.7" cy="8.3" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="8.3" cy="15.7" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.7" cy="15.7" r="1.1" fill="currentColor" stroke="none" />
     </svg>
   );
 }

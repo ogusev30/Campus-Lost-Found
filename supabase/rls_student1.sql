@@ -139,3 +139,13 @@ end;
 $$;
 
 grant execute on function public.get_owner_claims(uuid) to authenticated;
+
+-- Mini-game best scores: each user can only see/write their own row.
+create policy "game_scores_select_own" on public.game_scores
+  for select using (auth.uid() = user_id);
+
+create policy "game_scores_insert_own" on public.game_scores
+  for insert with check (auth.uid() = user_id);
+
+create policy "game_scores_update_own" on public.game_scores
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);

@@ -38,6 +38,17 @@ create table if not exists public.claims (
   unique (item_id, claimant_id)
 );
 
+-- Best scores for the two on-site mini-games, used to unlock the
+-- "sortItChampion" / "memoryMaster" achievements alongside the item/claim
+-- based ones.
+create table if not exists public.game_scores (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  game text not null check (game in ('sort_it', 'memory_cards')),
+  best_score integer not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, game)
+);
+
 create index if not exists items_owner_id_idx on public.items(owner_id);
 create index if not exists items_status_idx on public.items(status);
 create index if not exists claims_item_id_idx on public.claims(item_id);
@@ -81,6 +92,7 @@ create trigger items_set_updated_at
 alter table public.profiles enable row level security;
 alter table public.items enable row level security;
 alter table public.claims enable row level security;
+alter table public.game_scores enable row level security;
 
 -- Genuinely shared read policy: any logged-in user can browse the board
 -- (serves both Student 1's own-listing views and Student 2's browse/search).
