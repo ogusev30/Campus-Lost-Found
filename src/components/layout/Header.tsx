@@ -15,7 +15,7 @@ export async function Header() {
           className="flex items-center gap-2 font-display text-xl font-bold text-ink"
         >
           <Logo size={24} />
-          Campus <span className="text-brick">&amp;</span> Found
+          Campus Lost <span className="text-brick">&amp;</span> Found
         </Link>
 
         <nav className="flex flex-wrap items-center gap-3 text-sm">
