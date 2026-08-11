@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { formatMessage } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 
 export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/my-listings";
 
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
-    "idle",
-  );
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -23,31 +23,33 @@ export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
     setError(null);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    });
+    const { data, error: authError } =
+      mode === "signup"
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
 
-    if (signInError) {
+    if (authError) {
       setStatus("error");
-      setError(signInError.message);
+      setError(authError.message);
       return;
     }
 
-    setStatus("sent");
-  }
+    if (!data.user) {
+      setStatus("error");
+      setError("Something went wrong. Please try again.");
+      return;
+    }
 
-  if (status === "sent") {
-    return (
-      <div className="rounded-flyer border-2 border-ink bg-paper-dark p-6 text-center">
-        <p className="font-display font-semibold text-ink">{dict.checkEmailTitle}</p>
-        <p className="mt-2 text-sm text-ink-faint">
-          {formatMessage(dict.checkEmailBody, { email })}
-        </p>
-      </div>
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("id", data.user.id)
+      .single();
+
+    router.push(
+      profile?.name ? next : `/profile-setup?next=${encodeURIComponent(next)}`,
     );
+    router.refresh();
   }
 
   return (
@@ -66,6 +68,21 @@ export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
         />
       </label>
 
+      <label className="flex flex-col gap-1.5 text-left">
+        <span className="font-display text-sm font-semibold text-ink">
+          {dict.passwordLabel}
+        </span>
+        <input
+          type="password"
+          required
+          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder={dict.passwordPlaceholder}
+          className="rounded-flyer border-2 border-ink bg-paper px-3 py-2 font-body text-ink outline-none focus:border-brick"
+        />
+      </label>
+
       {status === "error" && error && (
         <p className="text-sm font-medium text-brick" role="alert">
           {error}
@@ -78,8 +95,28 @@ export function LoginForm({ dict }: { dict: Dictionary["login"] }) {
         disabled={status === "loading"}
         className="w-full justify-center"
       >
-        {status === "loading" ? dict.sending : dict.sendButton}
+        {status === "loading"
+          ? mode === "signup"
+            ? dict.signingUp
+            : dict.signingIn
+          : mode === "signup"
+            ? dict.signUpButton
+            : dict.signInButton}
       </Button>
+
+      <p className="text-center text-sm text-ink-faint">
+        {mode === "signup" ? dict.hasAccountPrompt : dict.noAccountPrompt}{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "signup" ? "signin" : "signup");
+            setError(null);
+          }}
+          className="font-semibold text-ink underline underline-offset-2"
+        >
+          {mode === "signup" ? dict.switchToSignIn : dict.switchToSignUp}
+        </button>
+      </p>
     </form>
   );
 }
