@@ -1,31 +1,38 @@
 -- Campus Lost & Found — Student 1 (Report & Manage) policies and functions.
 -- Run this SECOND, after schema.sql.
 
+drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles
   for select using (auth.uid() = id);
 
+drop policy if exists "profiles_update_own" on public.profiles;
 create policy "profiles_update_own" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);
 
 -- Lets profile-setup upsert work even if the on_auth_user_created trigger
 -- didn't create the row (e.g. it ran before the trigger existed, or the
 -- trigger couldn't be created due to project permissions).
+drop policy if exists "profiles_insert_own" on public.profiles;
 create policy "profiles_insert_own" on public.profiles
   for insert with check (auth.uid() = id);
 
+drop policy if exists "items_insert_own" on public.items;
 create policy "items_insert_own" on public.items
   for insert with check (auth.uid() = owner_id);
 
+drop policy if exists "items_update_own" on public.items;
 create policy "items_update_own" on public.items
   for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
 
 -- DB-level enforcement of "cannot delete a listing that has any claims".
+drop policy if exists "items_delete_own_no_claims" on public.items;
 create policy "items_delete_own_no_claims" on public.items
   for delete using (
     auth.uid() = owner_id
     and not exists (select 1 from public.claims c where c.item_id = items.id)
   );
 
+drop policy if exists "claims_select_owner" on public.claims;
 create policy "claims_select_owner" on public.claims
   for select using (
     exists (
@@ -34,6 +41,7 @@ create policy "claims_select_owner" on public.claims
     )
   );
 
+drop policy if exists "claims_update_owner" on public.claims;
 create policy "claims_update_owner" on public.claims
   for update
   using (
@@ -50,6 +58,7 @@ create policy "claims_update_owner" on public.claims
   );
 
 -- Storage: owners may only write into their own user_id folder.
+drop policy if exists "item_images_insert_own_folder" on storage.objects;
 create policy "item_images_insert_own_folder" on storage.objects
   for insert
   with check (
@@ -57,12 +66,14 @@ create policy "item_images_insert_own_folder" on storage.objects
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "item_images_update_own_folder" on storage.objects;
 create policy "item_images_update_own_folder" on storage.objects
   for update using (
     bucket_id = 'item-images'
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "item_images_delete_own_folder" on storage.objects;
 create policy "item_images_delete_own_folder" on storage.objects
   for delete using (
     bucket_id = 'item-images'
@@ -157,30 +168,36 @@ $$;
 grant execute on function public.get_owner_claims(uuid) to authenticated;
 
 -- Mini-game best scores: each user can only see/write their own row.
+drop policy if exists "game_scores_select_own" on public.game_scores;
 create policy "game_scores_select_own" on public.game_scores
   for select using (auth.uid() = user_id);
 
+drop policy if exists "game_scores_insert_own" on public.game_scores;
 create policy "game_scores_insert_own" on public.game_scores
   for insert with check (auth.uid() = user_id);
 
+drop policy if exists "game_scores_update_own" on public.game_scores;
 create policy "game_scores_update_own" on public.game_scores
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Smart Match: visible/writable by whichever side (lost or found owner) is
 -- the caller. Both owners can insert (whichever item was reported second
 -- triggers the match) and update (e.g. to dismiss their side of it).
+drop policy if exists "item_matches_select_owner" on public.item_matches;
 create policy "item_matches_select_owner" on public.item_matches
   for select using (
     exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
     or exists (select 1 from public.items i where i.id = found_item_id and i.owner_id = auth.uid())
   );
 
+drop policy if exists "item_matches_insert_owner" on public.item_matches;
 create policy "item_matches_insert_owner" on public.item_matches
   for insert with check (
     exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
     or exists (select 1 from public.items i where i.id = found_item_id and i.owner_id = auth.uid())
   );
 
+drop policy if exists "item_matches_update_owner" on public.item_matches;
 create policy "item_matches_update_owner" on public.item_matches
   for update using (
     exists (select 1 from public.items i where i.id = lost_item_id and i.owner_id = auth.uid())
@@ -191,19 +208,24 @@ create policy "item_matches_update_owner" on public.item_matches
 -- only allowed for self-notifications (match_found, item_returned,
 -- achievement_unlocked); the one cross-user case (claim_accepted) is
 -- inserted by the security-definer accept_claim() function above instead.
+drop policy if exists "notifications_select_own" on public.notifications;
 create policy "notifications_select_own" on public.notifications
   for select using (auth.uid() = user_id);
 
+drop policy if exists "notifications_insert_own" on public.notifications;
 create policy "notifications_insert_own" on public.notifications
   for insert with check (auth.uid() = user_id);
 
+drop policy if exists "notifications_update_own" on public.notifications;
 create policy "notifications_update_own" on public.notifications
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Achievement-unlock tracking: read/write own only.
+drop policy if exists "achievement_unlocks_select_own" on public.achievement_unlocks;
 create policy "achievement_unlocks_select_own" on public.achievement_unlocks
   for select using (auth.uid() = user_id);
 
+drop policy if exists "achievement_unlocks_insert_own" on public.achievement_unlocks;
 create policy "achievement_unlocks_insert_own" on public.achievement_unlocks
   for insert with check (auth.uid() = user_id);
 
